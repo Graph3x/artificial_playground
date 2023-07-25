@@ -1,4 +1,5 @@
 import pandas as pd
+from fastapi import FastAPI
 
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
@@ -81,6 +82,9 @@ main_pipeline = Pipeline(steps=[
     ('model', RandomForestClassifier(random_state=1, max_depth=5, n_estimators=500))
 ])
 
+# REMOVE FOR NON DEPLOYMENT USES
+main_pipeline.fit(X, y)
+
 
 def train():
     train_X, val_X, train_y, val_y = train_test_split(X, y, random_state=0)
@@ -95,7 +99,6 @@ def train():
 
 
 def compete():
-
     main_pipeline.fit(X, y)
 
     preds = main_pipeline.predict(test_data[feats])
@@ -108,9 +111,18 @@ def compete():
 def predict(p_class, title, family, fare, age):
     data = pd.DataFrame({'Pclass': [p_class], 'Title': [title],
                          'FamilyMembers': [family], 'Fare': [fare], 'Age': [age]})
-
-    main_pipeline.fit(X, y)
-    print(main_pipeline.predict(data))
+    return main_pipeline.predict(data)
 
 
-predict(1, "Mr", 0, 10, 20)
+app = FastAPI()
+
+
+@app.post("/")
+async def root(p_class: str, title: str, family: int, fare: int, age: int):
+    data = predict(p_class, title, family, fare, age)
+    return str(data[0])
+
+
+if __name__ == '__main__':
+    print(predict("2", "Mr.", 0, 7, 32))
+    print(predict("1", "Miss.", 3, 100, 12))
