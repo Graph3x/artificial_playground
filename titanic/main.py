@@ -121,8 +121,3 @@ app = FastAPI()
 async def root(p_class: str, title: str, family: int, fare: int, age: int):
     data = predict(p_class, title, family, fare, age)
     return str(data[0])
-
-
-if __name__ == '__main__':
-    print(predict("2", "Mr.", 0, 7, 32))
-    print(predict("1", "Miss.", 3, 100, 12))
